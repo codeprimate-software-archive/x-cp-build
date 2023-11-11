@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+
+<project name="cp-build-ext" basedir="../../" default="build">
+  <description>
+    Ant build.xml file for building and deploying the cp-build project, which is an extension to Ant
+    for the cp Ant build and deployment management system (BDMS).
+  </description>
+
+  <tstamp/>
+
+  <!-- environment variable property -->
+  <property environment="env"/>
+
+  <!-- filesystem path properties -->
+  <property name="build.dir" location="${basedir}/build"/>
+  <property name="dist.dir" location="${basedir}/dist"/>
+  <property name="etc.dir" location="${basedir}/etc"/>
+  <property name="etc.config.dir" location="${etc.dir}/config"/>
+  <property name="lib.dir" location="${basedir}/lib"/>
+  <property name="src.dir" location="${basedir}/src"/>
+
+  <!-- Archive (JAR) properties -->
+  <property name="jar.file.name" value="cp-build"/>
+  <property name="jar.file" value="${jar.file.name}.jar"/>
+
+  <!-- Compiler (Javac) properties -->
+  <path id="compile.classpath">
+    <pathelement location="${build.dir}"/>
+    <pathelement path="${lib.dir}/commons-logging.jar"/>
+    <pathelement path="${lib.dir}/junit.jar"/>
+    <pathelement path="${lib.dir}/log4j-1.2.15.jar"/>
+  </path>
+
+  <path id="compile.src.path">
+    <pathelement location="${src.dir}"/>
+  </path>
+
+  <!-- Resource properties -->
+  <property name="tasks.properties.file" value="${etc.config.dir}/tasks.properties"/>
+
+  <!-- project targets -->
+  <target name="build" depends="jar" description="Builds the cp-build-ext project API and Framework."/>
+
+  <target name="clean" description="Removes all cp-build-ext project build artifacts!">
+    <echo level="info">Removing build and dist directories...</echo>
+    <delete dir="build" includeEmptyDirs="true" failonerror="false"/>
+    <delete dir="dist" includeEmptyDirs="true" failonerror="false"/>
+  </target>
+
+  <target name="init" description="Initializes the cp-build project by creating the build and dist directories.">
+    <echo level="info">Creating build and dist directories...</echo>
+    <mkdir dir="${build.dir}"/>
+    <mkdir dir="${dist.dir}"/>
+  </target>
+
+  <target name="compile" depends="init" description="Compiles all source code files in the src directory.">
+    <echo level="info">Compiling all source files...</echo>
+    <javac classpathref="compile.classpath"
+      destdir="${build.dir}"
+      debug="on"
+      debuglevel="source,lines"
+      deprecation="on"
+      fork="yes"
+      includeantruntime="true">
+      <compilerarg value="-Xlint"/>
+      <src refid="compile.src.path"/>
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile, resources" description="Packages the contents of the build dir into a JAR file stored in the dist directory.">
+    <echo level="info">Jarring all compiled files...</echo>
+    <delete file="${dist.dir}/${jar.file}" failonerror="false"/>
+    <jar jarfile="${dist.dir}/${jar.file}" basedir="${build.dir}"/>
+  </target>
+
+  <target name="resources" depends="init" description="Compiles the resources contained in the etc directory and copies them to the build directory.">
+    <echo level="info">Compiling all resource files...</echo>
+    <copy file="${tasks.properties.file}" todir="${build.dir}" failonerror="true" overwrite="true"/>
+  </target>
+
+  <target name="rebuild" depends="clean, build" description="Rebuilds the cp-build-ext project API and Framework."/>
+
+  <target name="deploy" description="Deploys the cp-build API/Framework (cp-build.jar) to the cp-build project lib directory!">
+    <echo level="info">Deploying ${jar.file}...</echo>
+    <available file="${dist.dir}/${jar.file}" property="condition.jar.file.available"/>
+    <fail message="The JAR file (${jar.file}) does not exist!" unless="condition.jar.file.available"/>
+    <copy file="${dist.dir}/${jar.file}" todir="${lib.dir}" overwrite="true"/>
+  </target>
+
+</project>

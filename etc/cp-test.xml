@@ -1,0 +1,213 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright (c) 2009-2010. Codeprimate, LLC and authors.  All Rights Reserved.
+  ~
+  ~ This software is licensed under the Codeprimate End-User License Agreement (EULA).
+  ~ This software is proprietary and confidential in addition to an intellectual asset of the aforementioned authors.
+  ~ By using the software, the end-user implicitly consents to and agrees to be in compliance with all terms
+  ~ and conditions of the EULA.  Failure to comply with the EULA will result in the maximum penalties permissible by law.
+  ~
+  ~ In short, this software may not be reverse engineered, reproduced, copied, modified or distributed without prior
+  ~ authorization of the aforementioned authors, permissible and expressed only in writing.  The authors grant the
+  ~ end-user exclusive, non-negotiable and non-transferable use of the software "as is" without expressed or implied
+  ~ WARRANTIES, EXTENSIONS or CONDITIONS of any kind.
+  ~
+  ~ For further information on the software license, the end-user is encouraged to read the EULA @ ...
+  -->
+
+<project name="cp-test">
+  <description>
+    cp Ant build and deployment management system (BDMS) configuration file for running project test suites
+    including Unit, Integration and Functional (Acceptance) tests.
+  </description>
+
+  <propertycopy name="test.class.name" from="env.TEST_CLASS_NAME" silent="true"/>
+  <propertycopy name="test.method.name" from="env.TEST_METHOD_NAME" silent="true"/>
+  <propertycopy name="functional.test.suite" from="projects.${args.host}.${project.name}.functional-test-suite" silent="true"/>
+  <propertycopy name="integration.test.suite" from="projects.${args.host}.${project.name}.integration-test-suite" silent="true"/>
+  <propertycopy name="unit.test.suite" from="projects.${args.host}.${project.name}.unit-test-suite" silent="false"/>
+
+  <!-- JUnit Configuration -->
+  <property name="junit.fork" value="yes"/>
+  <property name="junit.haltonerror" value="off"/>
+  <property name="junit.haltonfailure" value="off"/>
+  <property name="junit.printsummary" value="off"/>
+  <property name="junit.formatter.type" value="brief"/>
+  <property name="junit.formatter.usefile" value="false"/>
+  <property name="junit.test.runner.class.name" value="com.cp.build.junit.textui.TestRunner"/>
+  <!--property name="junit.test.runner.class.name" value="junit.textui.TestRunner"/-->
+
+  <!-- Test (Java Launcher/JRE) Configuration -->
+  <property name="test.java.fork" value="true"/>
+
+  <pref name="test.runner"
+        localProperty="projects.${args.host}.${project.name}.testing-prefs.test-runner"
+        globalProperty="projects.global-prefs.testing-prefs.test-runner"
+        defaultValue="junit"/>
+
+  <!-- Runtime classpath for tests -->
+  <path id="test.runtime.classpath">
+    <path location="${build.instrumented.classes.dir}"/>
+    <path refid="compile.classpath"/>
+    <path refid="cobertura.lib"/>
+    <path refid="cp-build.lib"/>
+    <path refid="emma.lib"/>
+  </path>
+
+  <target name="determine.test.to.run" unless="test.to.run" description="This target determines which project test class to run!">
+    <echo level="debug">project test class name (${project.test.class.name})</echo>
+    <if>
+      <and>
+        <isset property="test.class.name"/>
+        <not>
+          <equals arg1="${test.class.name}" arg2="${empty.string}" trim="true"/>
+        </not>
+      </and>
+      <then>
+        <propertycopy name="test.to.run" from="test.class.name" silent="false"/>
+        <if>
+          <not>
+            <equals arg1="${test.method.name}" arg2="${empty.string}" trim="true"/>
+          </not>
+          <then>
+            <propertycopy name="test.method.to.run" from="env.TEST_METHOD_NAME" silent="true"/>
+          </then>
+          <else>
+            <property name="test.method.to.run" value=""/>
+          </else>
+        </if>
+      </then>
+      <else>
+        <property name="test.to.run" value="${project.test.class.name}"/>
+        <property name="test.method.to.run" value=""/>
+      </else>
+    </if>
+
+    <fail message="The test case or test suite to run must be specified!" unless="test.to.run"/>
+  </target>
+
+  <target name="all.tests" depends="unit.tests, integration.tests, functional.tests" description="Runs all project test suites!"/>
+
+  <target name="functional.tests" description="Runs the project functional test suite!" if="functional.test.suite">
+    <echo level="debug">Running functional test suite (${functional.test.suite})...</echo>
+    <sequential>
+      <property name="project.test.class.name" value="${functional.test.suite}"/>
+      <runtarget target="determine.test.to.run"/>
+      <runtarget target="run.tests"/>
+    </sequential>
+  </target>
+
+  <target name="integration.tests" description="Runs the project integration test suite!" if="integration.test.suite">
+    <echo level="debug">Running integration test suite (${integration.test.suite})...</echo>
+    <sequential>
+      <property name="project.test.class.name" value="${integration.test.suite}"/>
+      <runtarget target="determine.test.to.run"/>
+      <runtarget target="run.tests"/>
+    </sequential>
+  </target>
+
+  <target name="unit.tests" description="Runs the project unit test suite!" if="unit.test.suite">
+    <echo level="debug">Running unit test suite (${unit.test.suite})...</echo>
+    <sequential>
+      <property name="project.test.class.name" value="${unit.test.suite}"/>
+      <runtarget target="determine.test.to.run"/>
+      <runtarget target="run.tests"/>
+    </sequential>
+  </target>
+
+  <target name="test" depends="unit.tests" description="Alias for the unit.tests target."/>
+
+  <target name="run.tests" depends="build, determine.test.to.run" description="Runs the project test suite class.">
+    <echo level="info">Running test ${test.to.run}...</echo>
+    <trycatch property="test.exception">
+      <try>
+        <if>
+          <and>
+            <isset property="test.runner"/>
+            <equals arg1="${test.runner}" arg2="junit" trim="true"/>
+          </and>
+          <then>
+            <echo level="debug">Running test suite using the JUnit Ant task.</echo>
+            <junit fork="${junit.fork}"
+                   haltonerror="${junit.haltonerror}"
+                   haltonfailure="${junit.haltonfailure}"
+                   printsummary="${junit.printsummary}">
+              <jvmarg value="-Demma.coverage.out.file=${etc.coverage.dir}/${project.name}-coverage.emma"/>
+              <jvmarg value="-Demma.coverage.out.merge=true"/>
+              <sysproperty key="java.awt.headless" value="true"/>
+              <sysproperty key="java.util.logging.config.file" value="file://${etc.config.dir}/logging.properties"/>
+              <sysproperty key="log4j.configuration" value="file://${etc.config.dir}/log4j.properties"/>
+              <sysproperty key="org.apache.commons.logging.Log" value="org.apache.commons.logging.impl.Log4JLogger"/>
+              <sysproperty key="net.sourceforge.cobertura.datafile" file="${etc.coverage.dir}/${project.name}-coverage.cobertura"/>
+              <sysproperty key="project.dir" value="${project.home}"/>
+              <classpath refid="test.runtime.classpath"/>
+              <formatter type="${junit.formatter.type}" usefile="${junit.formatter.usefile}"/>
+              <test name="${test.to.run}"/>
+            </junit>
+          </then>
+          <else>
+            <echo level="debug">Running test suite using the Java launcher and the JUnit test runner class (${junit.test.runner.class.name}).</echo>
+            <java classname="${junit.test.runner.class.name}"
+                  classpathref="test.runtime.classpath"
+                  dir="${project.home}"
+                  fork="${test.java.fork}">
+              <classpath refid="test.runtime.classpath"/>
+              <jvmarg value="-Demma.coverage.out.file=${etc.coverage.dir}/${project.name}-coverage.emma"/>
+              <jvmarg value="-Demma.coverage.out.merge=true"/>
+              <sysproperty key="java.awt.headless" value="true"/>
+              <sysproperty key="java.util.logging.config.file" value="etc/config/logging.properties"/>
+              <sysproperty key="log4j.configuration" value="etc/config/log4j.properties"/>
+              <sysproperty key="org.apache.commons.logging.Log" value="org.apache.commons.logging.impl.Log4JLogger"/>
+              <sysproperty key="net.sourceforge.cobertura.datafile" file="${etc.coverage.dir}/${project.name}-coverage.cobertura"/>
+              <sysproperty key="project.dir" value="${project.home}"/>
+              <arg value="${test.to.run}"/>
+              <arg value="${test.method.to.run}"/>
+            </java>
+          </else>
+        </if>
+        <property name="condition.tests.passed" value="true"/>
+      </try>
+      <catch>
+        <echo level="warn">Tests ${test.to.run} failed!</echo>
+        <property name="condition.tests.passed" value="false"/>
+      </catch>
+      <finally>
+        <property name="condition.tests.ran" value="true"/>
+      </finally>
+    </trycatch>
+  </target>
+
+  <target name="check.test.imports" description="Determines whether all test case classes have been added to the all test suite class!">
+    <propertyregex property="converted.src.dir" input="${src.dir}" regexp="\\" replace="/" override="true" global="true"/>
+    <propertyregex property="converted.unit.test.suite" input="${unit.test.suite}" regexp="\." replace="/" override="true" global="true"/>
+    <property name="unit.test.suite.file" value="${converted.src.dir}/${converted.unit.test.suite}.java"/>
+    <echo level="debug">unit test suite file is ${unit.test.suite.file}</echo>
+
+    <foreach param="test.case.file" trim="true" target="check.test.is.included.in.test.suite" parallel="false" maxThreads="10">
+      <fileset dir="${src.dir}">
+        <include name="**/*Test.java"/>
+      </fileset>
+      <param name="test.suite.file" value="${unit.test.suite.file}"/>
+    </foreach>
+  </target>
+
+  <target name="check.test.is.included.in.test.suite" description="Checks the specified test cass class is included in the specified test suite class.">
+    <echo level="debug">test case file is ${test.case.file}</echo>
+    <getfullyqualifiedclassname property="test.case.class" filepath="${test.case.file}" targetos="unix"/>
+    <echo level="debug">test case class is ${test.case.class}</echo>
+
+    <shellscript shell="bash" dir="${src.dir}" outputproperty="grep.output">
+      grep -c ${test.case.class} ${test.suite.file}
+    </shellscript>
+
+    <echo level="debug">grep return value is ${grep.output}</echo>
+
+    <if>
+      <equals arg1="${grep.output}" arg2="0"/>
+      <then>
+        <echo level="info">${test.case.class}</echo>
+      </then>
+    </if>
+  </target>
+
+</project>

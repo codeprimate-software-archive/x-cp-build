@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+
+<project name="cp-scm-cvs">
+  <description>
+    cp Ant build and deployment management system (BDMS) configuration file for source control management (SCM)
+    using the Subversion version/revision control tool.
+  </description>
+
+  <target name="scm.init" description="Initializes a Codeprimate project directory for source control management.">
+    <fail message="Not Implemented!"/>
+  </target>
+
+  <target name="add" description="Adds a file, directory or a group of files and directories to source control.">
+    <fail message="Not Implemented!"/>
+  </target>
+
+  <target name="branch" description="Branches the source code repository.">
+    <fail message="Not Implemented!"/>
+  </target>
+
+  <target name="checkout" description="Checks out a working copy of a source code repository.">
+    <fail message="Not Implemented!"/>
+  </target>
+
+  <target name="commit" description="Checks in all source code file modifications in the working copy to the source code repository.">
+    <fail message="Not Implemented!"/>
+  </target>
+
+  <target name="export" description="Exports a source code repository for archival purposes.">
+    <fail message="Not Implemented!"/>
+  </target>
+
+  <target name="import" description="Imports the project home directory into the source code repository.">
+    <fail message="Not Implemented!"/>
+  </target>
+
+  <target name="remove" description="Removes a file or directory from source control.">
+    <fail message="Not Implemented!"/>
+  </target>
+
+  <target name="tag" description="Tags the source code repository.">
+    <fail message="Not Implemented!"/>
+  </target>
+
+  <target name="update" description="Updates the working copy of the source code repository.">
+    <fail message="Not Implemented!"/>
+  </target>
+
+</project>

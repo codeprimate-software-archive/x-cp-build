@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+
+<project name="cp-deploy-api">
+  <description>
+    cp Ant build and deployment management system (DBMS) configuration file for deployment management of
+    a software API and/or Framework.
+  </description>
+
+  <target name="deploy" description="Deploys a software API/Framework.">
+    <echo level="info">Deploying project files (${project.type} deployment)...</echo>
+
+    <available file="${jar.file}" type="file" property="condition.jar.file.available"/>
+    <fail unless="condition.jar.file.available" message="Unable to deploy distributable as the JAR file (${jar.file}) does not exist!"/>
+
+    <foreach target="deploy.distributable.to.project" param="dependent.project" list="${dependent.projects}" delimiter=","
+             inheritall="true" parallel="true"/>
+  </target>
+
+  <target name="deploy.distributable.to.project" if="condition.jar.file.available" description="Deploy distributable to project.">
+    <propertycopy property="dependent.project.home" from="projects.${args.host}.${dependent.project}.home" silent="true"/>
+
+    <if>
+      <isset property="dependent.project.home"/>
+      <then>
+        <copy file="${jar.file}" todir="${dependent.project.home}/lib" failonerror="false" flatten="true"
+              overwrite="true"/>
+      </then>
+      <else>
+        <echo level="warn">Warning, home directory for project (${dependent.project}) was not found!</echo>
+      </else>
+    </if>
+  </target>
+
+</project>

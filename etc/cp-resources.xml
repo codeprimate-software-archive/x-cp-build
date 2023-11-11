@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright (c) 2009-2010. Codeprimate, LLC and authors.  All Rights Reserved.
+  ~
+  ~ This software is licensed under the Codeprimate End-User License Agreement (EULA).
+  ~ This software is proprietary and confidential in addition to an intellectual asset of the aforementioned authors.
+  ~ By using the software, the end-user implicitly consents to and agrees to be in compliance with all terms
+  ~ and conditions of the EULA.  Failure to comply with the EULA will result in the maximum penalties permissible by law.
+  ~
+  ~ In short, this software may not be reverse engineered, reproduced, copied, modified or distributed without prior
+  ~ authorization of the aforementioned authors, permissible and expressed only in writing.  The authors grant the
+  ~ end-user exclusive, non-negotiable and non-transferable use of the software "as is" without expressed or implied
+  ~ WARRANTIES, EXTENSIONS or CONDITIONS of any kind.
+  ~
+  ~ For further information on the software license, the end-user is encouraged to read the EULA @ ...
+  -->
+
+<project name="cp-resources">
+  <description>
+    cp Ant build and deployment management system (BDMS) configuration file for building and managing resources
+    in a Codeprimate software product or service (referred to as a project).
+  </description>
+
+  <!-- local project properties -->
+  <property name="project.resources.file.name" value="${project.name}-resources"/>
+  <property name="project.resources.file" location="${etc.build.dir}/${project.resources.file.name}.xml"/>
+
+  <import file="${project.resources.file}" optional="true"/>
+
+  <target name="resources" depends="build.init" description="Copies the contents of the etc directory to the build directory.">
+    <echo level="info">Compiling all resource files...</echo>
+
+    <antcall target="resources.copy">
+      <param name="from.dir" value="${etc.config.dir}"/>
+      <param name="to.dir" value="${build.etc.config.dir}"/>
+    </antcall>
+
+    <antcall target="resources.bin.copy">
+      <param name="from.dir" value="${etc.icons.dir}"/>
+      <param name="to.dir" value="${build.etc.icons.dir}"/>
+    </antcall>
+
+    <antcall target="resources.bin.copy">
+      <param name="from.dir" value="${etc.images.dir}"/>
+      <param name="to.dir" value="${build.etc.images.dir}"/>
+    </antcall>
+
+    <antcall target="resources.bin.copy">
+      <param name="from.dir" value="${etc.logo.dir}"/>
+      <param name="to.dir" value="${build.etc.logo.dir}"/>
+    </antcall>
+
+    <if>
+      <available file="${project.resources.file}" type="file" property="condition.project.resources.file.available"/>
+      <then>
+        <echo level="debug">Calling project (${project.name}) resources file (${project.resources.file})...</echo>
+        <antcall target="${project.resources.file.name}.resources"/>
+      </then>
+    </if>
+  </target>
+
+  <target name="resources.bin.copy" description="Copies all resources from the source directory (etc) to the target directory under build.">
+    <echo level="debug">Copying resources from directory (${from.dir}) to directory (${to.dir})...</echo>
+
+    <if>
+      <available file="${from.dir}" type="dir"/>
+      <then>
+        <copy todir="${to.dir}">
+          <fileset dir="${from.dir}"/>
+        </copy>
+      </then>
+    </if>
+  </target>
+
+  <target name="resources.copy" description="Copies all resources from the source directory (etc) to the target directory under build.">
+    <echo level="debug">Copying resources from directory (${from.dir}) to directory (${to.dir})...</echo>
+
+    <if>
+      <available file="${from.dir}" type="dir"/>
+      <then>
+        <copy todir="${to.dir}" filtering="true">
+          <fileset dir="${from.dir}"/>
+          <filterset refid="init.filters"/>
+        </copy>
+      </then>
+    </if>
+  </target>
+
+</project>

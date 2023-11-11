@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+
+<project name="cp-analytics">
+
+  <!-- Checkstyle properties -->
+  <property name="checkstyle.failOnViolation" value="false"/>
+  <property name="checkstyle.formatter.type" value="xml"/>
+
+  <!-- set the Checkstyle configuration file -->
+  <if>
+    <available file="${etc.build.dir}/checkstyle-config.xml" property="condition.checkstyle.config.file.available"/>
+    <then>
+      <property name="checkstyle.config.file" value="${etc.build.dir}/checkstyle-config.xml"/>
+    </then>
+    <else>
+      <property name="checkstyle.config.file" value="${basedir}/etc/config/checkstyle-config.xml"/>
+    </else>
+  </if>
+
+  <!-- set the Checkstyle style file -->
+  <if>
+    <available file="${etc.build.dir}/checkstyle-style.xsl" property="condition.checkstyle.style.file.available"/>
+    <then>
+      <property name="checkstyle.style.file" value="${etc.build.dir}/checkstyle-style.xsl"/>
+    </then>
+    <else>
+      <property name="checkstyle.style.file" value="${basedir}/etc/config/checkstyle-style.xsl"/>
+    </else>
+  </if>
+
+  <!-- set the Checkstyle Java header file -->
+  <if>
+    <available file="${etc.build.dir}/java.header" property="condition.java.header.file.available"/>
+    <then>
+      <property name="java.header.file" value="${etc.build.dir}/java.header"/>
+    </then>
+    <else>
+      <property name="java.header.file" value="${basedir}/etc/config/java.header"/>
+    </else>
+  </if>
+
+  <!-- set the Checkstyle Suppressions file -->
+  <if>
+    <available file="${etc.build.dir}/suppressions.xml" property="condition.suppressions.file.available"/>
+    <then>
+      <property name="suppressions.file" value="${etc.build.dir}/suppressions.xml"/>
+    </then>
+    <else>
+      <property name="suppressions.file" value="${basedir}/etc/config/suppressions.xml"/>
+    </else>
+  </if>
+
+  <target name="analyze.checkstyle">
+    <echo level="info">Running Checkstyle on ${project.name} codebase...</echo>
+
+    <property name="etc.checkstyle.report.dir" value="${etc.checkstyle.dir}/report"/>
+
+    <delete dir="${etc.checkstyle.report.dir}" includeEmptyDirs="true" failonerror="false"/>
+    <mkdir dir="${etc.checkstyle.report.dir}"/>
+
+    <property name="checkstyle.report.html" value="${etc.checkstyle.report.dir}/${project.name}-checkstyle-report.html"/>
+    <property name="checkstyle.report.xml" value="${etc.checkstyle.dir}/${project.name}-checkstyle-report.xml"/>
+
+    <checkstyle config="${basedir}/tmp/checkstyle-config.xml" failOnViolation="${checkstyle.failOnViolation}">
+      <fileset dir="${src.dir}"/>
+      <formatter type="${checkstyle.formatter.type}" toFile="${checkstyle.report.xml}"/>
+      <property name="javaHeaderFile" value="${java.header.file}"/>
+      <property name="suppressionsFile" value="${suppressions.file}"/>
+    </checkstyle>
+
+    <style in="${checkstyle.report.xml}" out="${checkstyle.report.html}"
+           style="${checkstyle.style.file}"/>
+  </target>
+
+</project>

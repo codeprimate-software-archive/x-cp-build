@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+
+<project name="cp-launcher">
+  <description>
+    cp Ant build and deployment management system (BDMS) configuration file for running (launching) Java programs
+    from the command-line.
+  </description>
+
+  <!-- Launcher (Java) Configuration -->
+  <property name="launcher.java.fork" value="true"/>
+
+  <!-- property for the fully-qualified class file to run (using the Java launcher) -->
+  <property name="command.line.args" value="${env.COMMAND_LINE_ARGS}"/>
+  <property name="run.class.name" value="${env.RUN_CLASS_NAME}"/>
+
+  <target name="run" depends="build" description="Runs a single Java class from the command-line using the cp Ant build and deployment management system (BDMS).">
+    <echo level="info">Running class (${run.class.name})...</echo>
+
+    <java classname="${run.class.name}"
+          classpathref="runtime.classpath"
+          fork="${launcher.java.fork}">
+      <sysproperty key="project.dir" value="${project.home}"/>
+      <arg value="${command.line.args}"/>
+    </java>
+
+  </target>
+
+</project>

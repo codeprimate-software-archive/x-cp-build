@@ -1,0 +1,431 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright (c) 2009-2010. Codeprimate, LLC and authors.  All Rights Reserved.
+  ~
+  ~ This software is licensed under the Codeprimate End User License Agreement (EULA).
+  ~ This software is proprietary and confidential in addition to an intellectual asset of the aforementioned authors.
+  ~ By using the software, the end-user implicitly consents to and agrees to be in compliance with all terms
+  ~ and conditions of the EULA.  Failure to comply with the EULA will result in the maximum penalties permissible by law.
+  ~
+  ~ In short, this software may not be reverse engineered, reproduced, copied, modified or distributed without prior
+  ~ authorization of the aforementioned authors, permissible and expressed only in writing.  The authors grant the
+  ~ end-user non-exclusive, non-negotiable and non-transferable use of the software "as is" without expressed or implied
+  ~ WARRANTIES, EXTENSIONS or CONDITIONS of any kind.
+  ~
+  ~ For further information on the software license, the end user is encouraged to read the EULA @ ...
+  -->
+
+<!-- project importing this file must define the compiler.exclude.filter property -->
+<!-- project importing this file must define the jar.file.name property -->
+<!-- project importing this file must define the manifest.main-class.attribute property -->
+<project name="cp-build" default="help">
+  <description>
+    cp Ant build and deployment management system (BDMS) configuration file for cleaning build artifacts,
+    compiling source files, compiling resources and jarring class and software application configuration files.
+  </description>
+
+  <echo level="debug">basedir is (${basedir})</echo>
+
+  <!-- initialize the Codeprimate build and deployment management system (BDMS) -->
+  <import file="cp-init.xml"/>
+
+  <!-- Compiler (Javac tool) Configuration -->
+  <!-- srcdir is defined in the compile target -->
+  <!-- includes, includesfile, execludes*, excludesfile are defined in the compile target -->
+  <!-- classpath, classpathref*, sourcepath, sourcepathref, bootclasspath, bootclasspathref are defined in the default.compiler presetdef -->
+  <!-- extdirs is undefined -->
+  <!-- errorProperty is defined in the default.compiler presetdef -->
+  <!-- updatedProperty is defined in the default.compiler presetdef -->
+  <property name="compiler.compiler" value="modern"/> <!-- not used -->
+  <property name="compiler.depend" value="false"/> <!-- not used -->
+  <property name="compiler.deprecation" value="on"/>
+  <property name="compiler.destdir" value="${build.dir}"/>
+  <property name="compiler.encoding" value="UTF-8"/>
+  <property name="compiler.exclude.filter" value=""/>
+  <property name="compiler.executable" location="${env.JAVA_HOME}/bin/javac"/> <!-- not used -->
+  <property name="compiler.failonerror" value="true"/>
+  <property name="compiler.fork" value="yes"/>
+  <property name="compiler.includeAntRuntime" value="false"/>
+  <property name="compiler.includeDestClasses" value="true"/>
+  <property name="compiler.includeJavaRuntime" value="no"/> <!-- not used -->
+  <property name="compiler.listfiles" value="no"/>
+  <property name="compiler.memoryInitialSize" value="64m"/>
+  <property name="compiler.memoryMaximumSize" value="512m"/>
+  <property name="compiler.nowarn" value="off"/>
+  <property name="compiler.optimize" value="true"/>
+  <property name="compiler.tempdir" value="${tmp.dir}"/>
+  <property name="compiler.verbose" value="no"/>
+
+  <pref name="compiler.debug"
+        localProperty="projects.${args.host}.${project.name}.build-prefs.compiler-debug"
+        globalProperty="projects.global-prefs.build-prefs.compiler-debug"
+        defaultValue="on"/>
+
+  <pref name="compiler.debuglevel"
+        localProperty="projects.${args.host}.${project.name}.build-prefs.compiler-debuglevel"
+        globalProperty="projects.global-prefs.build-prefs.compiler-debuglevel"
+        defaultValue="source,lines"/>
+
+  <pref name="compiler.source"
+        localProperty="projects.${args.host}.${project.name}.build-prefs.compiler-source"
+        globalProperty="projects.global-prefs.build-prefs.compiler-source"
+        defaultValue="1.5"/>
+
+  <pref name="compiler.target"
+        localProperty="projects.${args.host}.${project.name}.build-prefs.compiler-target"
+        globalProperty="projects.global-prefs.build-prefs.compiler-target"
+        defaultValue="1.5"/>
+
+  <!-- Path information for compile-time classpath and source path -->
+  <path id="compile.classpath">
+    <pathelement location="${build.dir}"/>
+    <fileset dir="${lib.dir}">
+      <include name="**/*.jar"/>
+      <include name="**/*.zip"/>
+    </fileset>
+  </path>
+
+  <path id="compile.src.path">
+    <pathelement location="${src.dir}"/>
+  </path>
+
+  <!-- Preset definition for the Compiler (Javac) tool -->
+  <presetdef name="default.compiler">
+    <javac classpathref="compile.classpath"
+      debug="${compiler.debug}"
+      debuglevel="${compiler.debuglevel}"
+      deprecation="${compiler.deprecation}"
+      destdir="${compiler.destdir}"
+      encoding="${compiler.encoding}"
+      errorProperty="condition.compilation.failed"
+      failonerror="${compiler.failonerror}"
+      fork="${compiler.fork}"
+      includeAntRuntime="${compiler.includeAntRuntime}"
+      includeDestClasses="${compiler.includeDestClasses}"
+      listfiles="${compiler.listfiles}"
+      memoryInitialSize="${compiler.memoryInitialSize}"
+      memoryMaximumSize="${compiler.memoryMaximumSize}"
+      nowarn="${compiler.nowarn}"
+      optimize="${compiler.optimize}"
+      source="${compiler.source}"
+      target="${compiler.target}"
+      updatedProperty="condition.compilation.occurred.and.success"
+      tempdir="${compiler.tempdir}"
+      verbose="${compiler.verbose}">
+        <!--compilerarg file="javac.options"/-->
+        <!--compilerarg value="-Xlint:unchecked"/-->
+    </javac>
+  </presetdef>
+
+  <!-- Archive (JAR tool) Configuration -->
+  <!-- encoding property is not defined -->
+  <!-- includes, includesfile, excludes, excludesfile, defaultexcludes are not defined -->
+  <!-- whenmanifestonly is not defined -->
+  <!-- useLanguageEncodingFlag is not defined -->
+  <!-- createUnicodeExtraFields is not defined -->
+  <!-- fallbacktoUTF8 is not defined -->
+  <property name="jar.file" location="${dist.dir}/${jar.file.name}.jar"/>
+  <property name="manifest.file" location="${etc.meta-inf.dir}/${manifest.file.name}.mf"/>
+  <property name="jar.basedir" location="${build.dir}"/>
+  <property name="jar.compress" value="true"/>
+  <property name="jar.destfile" location="${jar.file}"/>
+  <property name="jar.duplicate" value="add"/>
+  <property name="jar.filesonly" value="false"/>
+  <property name="jar.filesetmanifest" value="merge"/>
+  <property name="jar.flattenAttributes" value="true"/>
+  <property name="jar.index" value="true"/>
+  <property name="jar.indexMetainf" value="true"/>
+  <property name="jar.keepcompression" value="false"/>
+  <property name="jar.manifest" location="${manifest.file}"/>
+  <property name="jar.manifestencoding" value="UTF-8"/>
+  <property name="jar.mergeClassPathAttributes" value="true"/>
+  <property name="jar.preserve0permissions" value="true"/>
+  <property name="jar.roundup" value="true"/>
+  <property name="jar.update" value="false"/>
+
+  <pref name="jar.level"
+        localProperty="projects.${args.host}.${project.name}.build-prefs.jar-level"
+        globalProperty="projects.global-prefs.build-prefs.jar-level"
+        defaultValue="5"/>
+
+  <!-- Preset definition for the Archive (JAR) tool -->
+  <presetdef name="default.archive">
+    <jar basedir="${jar.basedir}"
+         destfile="${jar.destfile}"
+         duplicate="${jar.duplicate}"
+         manifest="${jar.manifest}"
+         compress="${jar.compress}"
+         filesonly="${jar.filesonly}"
+         filesetmanifest="${jar.filesetmanifest}"
+         flattenAttributes="${jar.flattenAttributes}"
+         index="${jar.index}"
+         indexMetainf="${jar.indexMetainf}"
+         keepcompression="${jar.keepcompression}"
+         level="${jar.level}"
+         manifestencoding="${jar.manifestencoding}"
+         mergeClassPathAttributes="${jar.mergeClassPathAttributes}"
+         preserve0permissions="${jar.preserve0permissions}"
+         roundup="${jar.roundup}"
+         update="${jar.update}"/>
+  </presetdef>
+
+  <!-- Manifest (MANIFEST file attributes) Configuration -->
+  <property name="manifest.built-by.attribute" value="cp Ant build and deployment management system (BDMS)"/>
+  <property name="manifest.implementation-vendor.attribute" value="Codeprimate, LLC"/>
+  <property name="manifest.implementation-title.attribute" value="${project.name}"/>
+  <property name="manifest.implementation-version.attribute" value="${project.version}"/>
+  <property name="manifest.main-class.attribute" value="${manifest.main-class.attribute}"/>
+
+  <!-- Preset definition for the JAR file MANIFEST tool -->
+  <presetdef name="default.manifest">
+    <manifest file="${manifest.file}">
+      <attribute name="Built-By" value="${manifest.built-by.attribute}"/>
+      <attribute name="Main-Class" value="${manifest.main-class.attribute}"/>
+      <attribute name="Class-Path" value="${manifest.class-path.attribute}"/>
+      <section name="common">
+        <attribute name="Implementation-Vendor" value="${manifest.implementation-vendor.attribute}"/>
+        <attribute name="Implementation-Title" value="${manifest.implementation-title.attribute}"/>
+        <attribute name="Implementation-Version" value="${manifest.implementation-version.attribute}"/>
+      </section>
+    </manifest>
+  </presetdef>
+
+  <!-- Source Code Management (SCM) tool -->
+  <pref name="scm.tool"
+        localProperty="projects.${args.host}.${project.name}.scm-prefs.scm-tool"
+        globalProperty="projects.global-prefs.scm-prefs.scm-tool"
+        defaultValue="cvs"/>
+
+  <sequential>
+    <import file="cp-util.xml"/>
+    <import file="cp-resources.xml"/>
+    <import file="cp-scm-${scm.tool}.xml"/>
+    <import file="cp-test.xml"/>
+    <import file="cp-analytics.xml"/>
+    <import file="cp-coverage.xml"/>
+    <import file="cp-deploy-${project.type}.xml"/>
+    <import file="cp-launcher.xml"/>
+  </sequential>
+
+  <target name="build" description="Builds the project by compiling source files, building and copying resources and jarring class files, resource files and other build artifacts.">
+    <echo level="info">Building all project files...</echo>
+
+    <runtarget target="compile"/>
+    <runtarget target="resources"/>
+
+    <condition property="condition.build.jar.file">
+      <and>
+        <equals arg1="${test.class.name}" arg2="${empty.string}" trim="true"/>
+        <or>
+          <not>
+            <available file="${jar.file}" type="file"/>
+          </not>
+          <not>
+            <uptodate targetfile="${jar.file}">
+              <srcfiles dir="${build.dir}" includes="**/*.*"/>
+              <srcfiles dir="${etc.meta-inf.dir}" includes="**/*.mf"/>
+            </uptodate>
+          </not>
+          <not>
+            <uptodate targetfile="${manifest.file}" srcfile="${etc.build.dir}/paths.xml"/>
+          </not>
+        </or>
+      </and>
+    </condition>
+
+    <echo level="debug">building JAR file (${condition.build.jar.file})</echo>
+    <runtarget target="build.jar"/>
+
+    <if>
+      <and>
+        <equals arg1="${test.class.name}" arg2="${empty.string}" trim="true"/>
+        <isfalse value="${condition.build.jar.file}"/>
+      </and>
+      <then>
+        <echo level="info">JAR file (${jar.file}) is up-to-date</echo>
+      </then>
+    </if>
+
+    <runtarget target="update.build.number"/>
+  </target>
+
+  <!-- Makes the build and dist directories under the proejct base directory. (Root Node) -->
+  <target name="build.init" unless="condition.build.directories.initialized" description="Makes the build and dist directories.">
+    <condition property="condition.build.directories.initialized">
+      <and>
+        <available file="${build.dir}" type="dir"/>
+        <available file="${dist.dir}" type="dir"/>
+      </and>
+    </condition>
+
+    <if>
+      <not>
+        <isset property="condition.build.directories.initialized"/>
+      </not>
+      <then>
+        <echo level="info">Initializing build directories...</echo>
+        <echo level="debug">Creating build directory...</echo>
+        <mkdir dir="${build.dir}"/>
+        <echo level="debug">Creating dist directory...</echo>
+        <mkdir dir="${dist.dir}"/>
+        <property name="condition.build.directories.initialized" value="true"/>
+      </then>
+    </if>
+  </target>
+
+  <target name="build.jar" if="condition.build.jar.file" description="Packages all class and resource files as well as other build artifacts in the build directory into a JAR file placed in the dist directory.">
+    <echo level="info">Jarring all compiled files...</echo>
+
+    <condition property="condition.build.manifest.file">
+      <or>
+        <not>
+          <available file="${manifest.file}" type="file" property="condition.manifest.file.available"/>
+        </not>
+        <not>
+          <uptodate targetfile="${manifest.file}" srcfile="${etc.build.dir}/paths.xml"/>
+        </not>
+      </or>
+    </condition>
+
+    <echo level="debug">building MANIFEST file (${condition.build.manifest.file})</echo>
+    <runtarget target="build.manifest"/>
+
+    <available file="${manifest.file}" type="file" property="condition.manifest.file.available"/>
+    <fail unless="condition.manifest.file.available" message="The manifest file (${manifest.file}) must exist in order to create the JAR file (${jar.file})!"/>
+    <delete file="${jar.file}" failonerror="true"/>
+
+    <default.archive/>
+  </target>
+
+  <target name="build.manifest" if="condition.build.manifest.file" description="Creates a MANIFEST file for the project JAR file.">
+    <echo level="info">Building MANIFEST file (${manifest.file}) for JAR file (${jar.file})...</echo>
+
+    <mkdir dir="${etc.meta-inf.dir}"/>
+    <delete file="${manifest.file}" failonerror="false"/>
+
+    <!-- the jar file does not need to exist, but the jar file's parent directory determines the class-path attribute in the manifest file -->
+    <!--manifestclasspath property="manifest.class-path.attribute" jarfile="${jar.file}"-->
+    <manifestclasspath property="manifest.class-path.attribute" jarfile="${project.home}/no.jar">
+      <classpath refid="runtime.classpath"/>
+    </manifestclasspath>
+
+    <default.manifest/>
+  </target>
+
+  <!-- cleans all binary directories (build & dist)  -->
+  <target name="clean" description="Removes the build and dist directories including all contents.">
+    <echo level="info">Cleaning all build files (artifacts)...</echo>
+    <echo level="debug">Removing build directory (${build.dir})...</echo>
+    <delete dir="${build.dir}" failonerror="false" includeemptydirs="true"/>
+    <echo level="debug">Removing dist directory (${dist.dir})...</echo>
+    <delete dir="${dist.dir}" failonerror="false" includeemptydirs="true"/>
+  </target>
+
+  <target name="compile" depends="build.init" description="Compile the project source code files to the build directory.">
+    <echo level="info">Compiling all source files...</echo>
+    <default.compiler>
+      <src refid="compile.src.path"/>
+      <exclude name="${compiler.exclude.filter}"/>
+    </default.compiler>
+  </target>
+
+  <target name="jar" depends="compile, resources" description="Packages all the class and resource files in the build directory into a JAR file placed in the dist directory.">
+    <property name="condition.build.jar.file" value="true"/>
+    <antcall target="build.jar"/>
+  </target>
+
+  <target name="manifest" description="Creates the MANIFEST file for the project JAR file.">
+    <property name="condition.build.manifest.file" value="true"/>
+    <antcall target="build.manifest"/>
+  </target>
+
+  <target name="rebuild" description="Rebuilds the project by cleaning the build and dist directories and then building all project files.">
+    <echo level="info">Rebuilding all project files...</echo>
+    <antcall target="clean"/>
+    <antcall target="build"/>
+  </target>
+
+  <target name="update.build.number" description="Updates the build number in the build.number file as well as the build version in the build.version file of the Codeprimate project.">
+    <buildnumber file="${project.home}/build.number"/>
+    <shellscript shell="bash" dir="${project.home}">
+      echo ${YEAR.MONTH.DAY}.${tstamp.hourOfDayMinute}.${build.number} > build.version
+    </shellscript>
+  </target>
+
+  <!-- Manual for this Ant build script file. -->
+  <target name="man" depends="help" description="Manual for the cp Ant build and deployment management system (BDMS)."/>
+
+  <!-- Information about this Ant build script file. -->
+  <target name="info" depends="help" description="Information about the cp Ant build and deployment management system (BDMS)."/>
+
+  <!-- Displays project help information to the user. (default target) -->
+  <target name="help" description="Displays context-sensitive help for this Ant build script file.">
+    <echo level="info">
+HELP
+
+cp Ant build and deployment management system (BDMS) configuration file (cp-build.xml) for
+initialization, cleaning, compiling and jarring tasks.  There are additional tasks for
+building resources, running tests, analyzing source code, reporting test coverage, deploying
+and running software applications as well as several targets for performing various source code
+management activities.
+
+Available Targets:
+
+BUILD &amp; DEPLOYMENT (GENERAL)
+  build                    compiles source files, builds resources and packages the software application into
+                           a distributable (JAR file).
+  build.init               initializes the build and dist directories used for output of build artifacts.
+  build.jar                packages all class and resource files from the build directory into a JAR file stored in
+                           the dist directory.
+  build.manifest           creates a MANIFEST file for the project JAR file (distributable).
+  clean                    removes the build and dist directories as well as their contents.
+  compile                  compiles all sources code files in the project source (src) directory to the build directory.
+  deploy                   deploys the distributable into production, or use as a runtime application of software.
+  help                     documentation and usage information for the cp Ant build and deployment management system (BDMS).
+  info                     alias for displaying help information on the cp Ant build and deployment management system (BDMS).
+  init.project             sets up and initializes project directory structure for a Codeprimate product or service.
+  jar                      jars all compiled source files (class files) and resources into the project JAR file.
+  man                      alias for displaying help information on the cp Ant build and deployment management system (BDMS).
+  manifest                 creates the MANIFEST file for the project JAR file (distributable).
+  rebuild                  rebuilds the project by running the clean and build targets.
+  remove.project           removes the working copy (codebase) of the specified project.
+  resources                builds all resources in the project etc directory to the build directory.
+  update.project           updates the working copy of the
+
+METRICS
+  analyze.checkstyle       runs the Checkstyle source code analysis tool to verify and report on non-comformant
+                           source code as defined in the coding conventions and standards for the individual projects.
+  cobertura.test.coverage  runs the Cobertura test coverage analysis tool on the project codebase.
+  emma.test.coverage       runs the EMMA test coverage analysis tool on the project codebase.
+
+RUN
+  run                      executes the software application executable from it's deployment.
+
+SOURCE CONTROL
+  add                      adds a file or directory to source control in the source code repository.
+  branch                   branches the project codebase from the head/trunk of the source code repository.
+  checkout                 checks out the source code in the source code repository module.
+  commit                   commits all changes to source files of a project to the source code repository
+  export                   exports a project codebase from the source code repository as a non-working directory.
+  import                   imports an existing project codebase into the source code repository to be managed
+                           and controled by the source code repository.
+  merge                    merges the changes from a branch up to the head/trunk in a source code repository
+  remove                   removes a file or directory from source control in the source code repository.
+  tag                      tags an existing project codebase for a particular release and possible branch of the
+                           source code repository.
+  update                   updates the existing project codebase working directory to pick up any changes currently
+                           checked into the source code repository.
+
+TESTING
+  all.tests                runs all project test suites (functional, integration and unit tests).
+  functional.tests         runs the project functional (acceptance) test suite.
+  integration.tests        runs the project integration test suite.
+  test                     alias for running the unit.tests target.
+  unit.tests               runs the project unit test suite.
+
+Copyright (c) Codeprimate, ${dstamp.year}
+All Rights Reserved
+    </echo>
+  </target>
+
+</project>

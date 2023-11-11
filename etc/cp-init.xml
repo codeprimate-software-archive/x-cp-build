@@ -1,0 +1,302 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright (c) 2009-2010. Codeprimate, LLC and authors.  All Rights Reserved.
+  ~
+  ~ This software is licensed under the Codeprimate End-User License Agreement (EULA).
+  ~ This software is proprietary and confidential in addition to an intellectual asset of the aforementioned authors.
+  ~ By using the software, the end-user implicitly consents to and agrees to be in compliance with all terms
+  ~ and conditions of the EULA.  Failure to comply with the EULA will result in the maximum penalties permissible by law.
+  ~
+  ~ In short, this software may not be reverse engineered, reproduced, copied, modified or distributed without prior
+  ~ authorization of the aforementioned authors, permissible and expressed only in writing.  The authors grant the
+  ~ end-user exclusive, non-negotiable and non-transferable use of the software "as is" without expressed or implied
+  ~ WARRANTIES, EXTENSIONS or CONDITIONS of any kind.
+  ~
+  ~ For further information on the software license, the end-user is encouraged to read the EULA @ ...
+  -->
+
+<project name="cp-init">
+  <description>
+    cp Ant build and deployment management system (BDMS) initialization file for declaring project variables, paths
+    and targets to create, remove and update projects.  The init Ant XML build script also loads library dependencies
+    used by the cp Ant build and deployment tool to enhance/extend functionality used during the build and deployment
+    process.
+  </description>
+
+  <!-- Define various date/time variables used throughout the build and deployment process -->
+  <tstamp>
+    <format property="dstamp.year" pattern="yyyy"/>
+    <format property="tstamp.hourOfDayMinute" pattern="HHmm"/>
+    <format property="DAY_MONTH_YEAR" pattern="dd MMMMM yyyy"/>
+    <format property="YEAR.MONTH.DAY" pattern="yyyy.MM.dd"/>
+  </tstamp>
+
+  <!-- Define additional libraries (libs) required by the cp Ant build & deployment tool -->
+  <path id="checkstyle.lib">
+    <pathelement location="${basedir}/lib/checkstyle-all-4.4.jar"/>
+  </path>
+
+  <path id="cobertura.lib">
+    <pathelement location="${basedir}/lib/asm-2.2.1.jar"/>
+    <pathelement location="${basedir}/lib/asm-tree-2.2.1.jar"/>
+    <pathelement location="${basedir}/lib/jakarta-oro-2.0.8.jar"/>
+    <pathelement location="${basedir}/lib/log4j-1.2.16.jar"/>
+    <pathelement location="${basedir}/lib/cobertura-1.9.jar"/>
+  </path>
+
+  <path id="cp-build.lib">
+    <pathelement location="${basedir}/lib/cp-build.jar"/>
+  </path>
+
+  <path id="emma.lib">
+    <pathelement location="${basedir}/lib/emma.jar"/>
+    <pathelement location="${basedir}/lib/emma_ant.jar"/>
+  </path>
+
+  <!-- Define optional tasks for the cp Ant build & deployment tool -->
+  <taskdef resource="net/sf/antcontrib/antlib.xml"/>
+  <taskdef resource="checkstyletask.properties" classpathref="checkstyle.lib"/>
+  <taskdef resource="tasks.properties" classpathref="cobertura.lib"/>
+  <taskdef resource="tasks.properties" classpathref="cp-build.lib"/>
+  <taskdef resource="emma_ant.properties" classpathref="emma.lib"/>
+
+  <!-- environment variable property -->
+  <property environment="env"/>
+
+  <!-- load the user projects configuration file -->
+  <xmlproperty file="${user.projects.file}" semanticAttributes="true"/>
+
+  <!-- global project properties and preferences -->
+  <property name="empty.string" value=""/>
+  <property name="project.name" value="${env.PROJECT_NAME}"/>
+  <propertycopy name="project.home" from="projects.${args.host}.${project.name}.home"/>
+  <propertycopy name="project.repository" from="projects.${args.host}.${project.name}.repository"/>
+  <propertycopy name="project.repository.revision" from="projects.${args.host}.${project.name}.revision"/>
+  <propertycopy name="project.type" from="projects.${args.host}.${project.name}.type"/>
+
+  <pref name="project.model"
+        localProperty="projects.${args.host}.${project.name}.project-model"
+        globalProperty="projects.global-prefs.project-model"
+        defaultValue="ant"/>
+
+  <!-- load project version information -->
+  <loadfile srcFile="${project.home}/version.txt" property="project.version" failonerror="false" quiet="true">
+    <filterchain>
+      <striplinebreaks/>
+    </filterchain>
+  </loadfile>
+
+  <!-- import project filesystem path properties -->
+  <import file="cp-${project.model}-project-model.xml"/>
+
+  <!-- load project build.properties and paths.xml build/deployment configurations files -->
+  <if>
+    <and>
+      <available file="${project.home}" type="dir" property="condition.project.home.available"/>
+      <not>
+        <or>
+          <equals arg1="${env.ANT_TARGET}" arg2="init.project" trim="true"/>
+          <equals arg1="${env.ANT_TARGET}" arg2="remove.project" trim="true"/>
+          <equals arg1="${env.ANT_TARGET}" arg2="update.project" trim="true"/>
+        </or>
+      </not>
+    </and>
+    <then>
+      <echo level="debug">Ant target is (${env.ANT_TARGET})</echo>
+      <!-- load the project's build.properties file from /etc/build directory of the project home directory -->
+      <if>
+        <available file="${etc.build.dir}/build.properties" type="file" property="condition.build.properties.available"/>
+        <then>
+          <property file="${etc.build.dir}/build.properties"/>
+        </then>
+        <else>
+          <fail>A build.properties file must be defined in the (${etc.build.dir}) directory of the (${project.name}) project!</fail>
+        </else>
+      </if>
+      <!-- load the project's paths.xml file from /etc/build directory of the project home directory -->
+      <if>
+        <available file="${etc.build.dir}/paths.xml" type="file" property="condition.paths.xml.available"/>
+        <then>
+          <xmlproperty file="${etc.build.dir}/paths.xml" semanticattributes="true"/>
+        </then>
+        <else>
+          <fail>A paths.xml file must be defined in the (${etc.build.dir}) directory of the (${project.name}) project!</fail>
+        </else>
+      </if>
+    </then>
+  </if>
+
+  <!-- Define initialization filters -->
+  <filterset id="init.filters" begintoken="%" endtoken="*">
+    <filter token="projectName" value="${project.name}"/>
+    <filter token="PROJECT_NAME" value="${project.name}"/>
+  </filterset>
+
+  <target name="init.set.project.type.condition" description="Sets conditional properties indicating the project type.">
+    <condition property="condition.project.type.api">
+      <equals arg1="${project.type}" arg2="api" trim="true"/>
+    </condition>
+
+    <condition property="condition.project.type.desktop">
+      <equals arg1="${project.type}" arg2="desktop" trim="true"/>
+    </condition>
+
+    <condition property="condition.project.type.web">
+      <equals arg1="${project.type}" arg2="web" trim="true"/>
+    </condition>
+
+    <condition property="condition.project.type.mobile">
+      <equals arg1="${project.type}" arg2="mobile" trim="true"/>
+    </condition>
+  </target>
+
+  <target name="init.project" depends="init.set.project.type.condition"
+          description="Initializes a Codeprimate project setting up the project home directory including all necessary sub-directories and files.">
+    <echo level="debug">project type (${project.type})</echo>
+    <echo level="debug">is project type api (${condition.project.type.api})</echo>
+    <echo level="debug">is project type desktop (${condition.project.type.desktop})</echo>
+    <echo level="debug">is project type web (${condition.project.type.web})</echo>
+
+    <if>
+      <not>
+        <available file="${project.home}" type="dir"/>
+      </not>
+      <then>
+        <echo level="info">Creating a new Codeprimate project (${project.name}) in directory (${project.home})...</echo>
+        <mkdir dir="${bak.dir}"/>
+        <mkdir dir="${bin.dir}"/>
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${dist.dir}"/>
+        <mkdir dir="${etc.dir}"/>
+        <mkdir dir="${lib.dir}"/>
+        <mkdir dir="${src.dir}"/>
+        <mkdir dir="${test.src.dir}"/>
+        <mkdir dir="${tmp.dir}"/>
+
+        <!-- initialize project sub-directories and source files -->
+        <runtarget target="init.etc.build.dir"/>
+        <runtarget target="init.etc.config.dir"/>
+        <runtarget target="init.lib.dir"/>
+        <runtarget target="init.src.dir"/>
+
+        <!-- initialize the project for source code management -->
+        <runtarget target="scm.init"/>
+
+        <!-- initialize project based on project type -->
+        <runtarget target="init.api.project"/>
+        <runtarget target="init.desktop.project"/>
+        <runtarget target="init.web.project"/>
+      </then>
+      <else>
+        <fail>The project home directory (${project.home}) already exists!</fail>
+      </else>
+    </if>
+  </target>
+
+  <target name="init.api.project" if="condition.project.type.api" description="Initializes an API/Framework project upon creation."/>
+
+  <target name="init.desktop.project" if="condition.project.type.desktop" description="Initializes a Desktop Application project upon creation.">
+    <copy todir="${bin.dir}" failonerror="true" overwrite="true">
+      <fileset dir="${basedir}/bin">
+        <include name="cp-exe.*"/>
+      </fileset>
+      <!--filterset refid="init.filters"/-->
+    </copy>
+  </target>
+
+  <target name="init.web.project" if="condition.project.type.web" description="Initializes a Web Application project upon creation."/>
+
+  <target name="init.etc.build.dir" description="Initializes the etc/build directory for the project by copying template build.properties and path.xml files.">
+    <mkdir dir="${etc.build.dir}"/>
+
+    <copy todir="${etc.build.dir}" failonerror="true" overwrite="false">
+      <fileset dir="${basedir}/etc/tmpl">
+        <include name="build.properties.tmpl"/>
+        <include name="paths.xml.tmpl"/>
+      </fileset>
+      <filterset refid="init.filters"/>
+      <mapper type="glob" from="*.tmpl" to="*"/>
+    </copy>
+  </target>
+
+  <target name="init.etc.config.dir" description="Initializes the etc/config directory for the project by copying the logging configuration files.">
+    <mkdir dir="${etc.config.dir}"/>
+
+    <copy todir="${etc.config.dir}" failonerror="true" overwrite="false">
+      <fileset dir="${basedir}/etc/tmpl">
+        <include name="commons-logging.properties.tmpl"/>
+        <include name="log4j.properties.tmpl"/>
+        <include name="logging.properties.tmpl"/>
+      </fileset>
+      <filterset refid="init.filters"/>
+      <mapper type="glob" from="*.tmpl" to="*"/>
+    </copy>
+  </target>
+
+  <target name="init.lib.dir" description="Initializes the lib directory for the project by copying necessary JAR file dependencies for the project.">
+    <!-- TODO research Apache Ivy -->
+    <mkdir dir="${lib.dir}"/>
+  </target>
+
+  <target name="init.src.dir" description="Initializes the source directory with classes in the appropriate packages (directories).">
+    <propertycopy property="fully.qualified.class.name" from="projects.${args.host}.${project.name}.unit-test-suite" silent="false"/>
+
+    <if>
+      <equals arg1="${fully.qualified.class.name}" arg2="${empty.string}" trim="true"/>
+      <then>
+        <fail>A fully-qualified class name of the project test suite must be specified!</fail>
+      </then>
+    </if>
+
+    <lastindexof property="last.dot.index" token="." value="${fully.qualified.class.name}"/>
+    <substring property="package.name" beginIndex="0" endIndex="${last.dot.index}" value="${fully.qualified.class.name}"/>
+    <propertyregex property="absolute.source.file.directory" input="${test.src.dir}/${package.name}" regexp="\." replace="/"
+                   override="true" defaultValue="com.codeprimate.${project.name}.tests"/>
+
+    <echo level="debug">${fully.qualified.class.name}</echo>
+    <echo level="debug">${last.dot.index}</echo>
+    <echo level="debug">${package.name}</echo>
+    <echo level="debug">${absolute.source.file.directory}</echo>
+
+    <filterset id="init.source.code.filters" begintoken="%" endtoken="*">
+      <filterset refid="init.filters"/>
+      <filter token="PACKAGE_NAME" value="${package.name}"/>
+      <filter token="TIMESTAMP" value="${DAY_MONTH_YEAR}"/>
+      <filter token="USER" value="${env.USER}"/>
+      <filter token="VERSION_TAG" value="$Revision: 1.10 $"/>
+    </filterset>
+
+    <mkdir dir="${absolute.source.file.directory}"/>
+
+    <copy todir="${absolute.source.file.directory}" failonerror="false" overwrite="false">
+      <fileset dir="${basedir}/etc/tmpl">
+        <include name="*.java.tmpl"/>
+        <exclude name="HelloWorld.java.tmpl"/>
+      </fileset>
+      <filterset refid="init.source.code.filters"/>
+      <mapper type="glob" from="*.tmpl" to="*"/>
+    </copy>
+  </target>
+
+  <!-- TODO add logic to determine if the project has any modified files before removal. -->
+  <target name="remove.project" description="Removes a Codeprimate project directory including all sub-directories and files.">
+    <echo level="info">Removing the existing Codeprimate project (${project.name}) and working directory (${project.home})...</echo>
+    <delete dir="${project.home}" quiet="false" verbose="true" failonerror="true"/>
+  </target>
+
+  <target name="update.project" depends="init.set.project.type.condition"
+          description="Updates a Codeprimate project with the latest build files from the cp-build Codeprimate project.">
+    <if>
+      <available file="${project.home}" type="dir"/>
+      <then>
+        <runtarget target="init.etc.build.dir"/>
+        <runtarget target="init.etc.config.dir"/>
+        <runtarget target="scm.init"/>
+        <runtarget target="init.api.project"/>
+        <runtarget target="init.desktop.project"/>
+        <runtarget target="init.web.project"/>
+      </then>
+    </if>
+  </target>
+
+</project>

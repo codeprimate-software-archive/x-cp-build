@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<projects default="cp-common">
+  <global-prefs>
+    <!--bak-dir>f:/Codeprimate/products/bak</bak-dir-->
+    <bak-dir>${project.home}/../bak</bak-dir>
+    <project-model>ant</project-model>
+    <build-prefs>
+      <compiler-debug>on</compiler-debug>
+      <compiler-debuglevel>source,lines</compiler-debuglevel>
+      <compiler-source>1.5</compiler-source>
+      <compiler-target>1.5</compiler-target>
+      <jar-level>5</jar-level>
+    </build-prefs>
+    <scm-prefs>
+      <scm-tool>cvs</scm-tool>
+      <cvs-root>:ext:jblum@dataserver:/src-ctrl/cvsroot</cvs-root>
+      <cvs-rsh>ssh</cvs-rsh>
+      <cvs-passfile></cvs-passfile>
+      <cvs-vendor-tag>Codeprimate</cvs-vendor-tag>
+      <cvs-start-tag>Initial</cvs-start-tag>
+    </scm-prefs>
+    <testing-prefs>
+      <test-runner>java</test-runner>
+    </testing-prefs>
+  </global-prefs>
+
+  <apple>
+    <cp-common name="cp-common" type="api" home="/Users/jblum/DEV/Codeprimate/products/cp-common" repository="cp-common" revision="HEAD">
+      <unit-test-suite>com.cp.common.test.AllUnitTests</unit-test-suite>
+    </cp-common>
+    <cp-domain name="cp-domain" type="api" home="/Users/jblum/DEV/Codeprimate/products/cp-domain" repository="cp-domain" revision="HEAD">
+      <unit-test-suite>com.cp.domain.test.AllUnitTests</unit-test-suite>
+    </cp-domain>
+    <cp-examples name="cp-examples" type="api" home="/Users/jblum/DEV/Codeprimate/products/cp-examples" repository="cp-examples" revision="HEAD">
+      <unit-test-suite>com.cp.examples.test.AllUnitTests</unit-test-suite>
+    </cp-examples>
+    <cp-tools name="cp-tools" type="api" home="/Users/jblum/DEV/Codeprimate/products/cp-tools" repository="cp-tools" revision="HEAD">
+      <unit-test-suite>com.cp.tools.test.AllUnitTests</unit-test-suite>
+    </cp-tools>
+    <cp-website name="cp-website" type="web" home="/Users/jblum/DEV/Codeprimate/products/cp-website" repository="cp-website" revision="HEAD">
+      <unit-test-suite>com.cp.website.test.AllUnitTests</unit-test-suite>
+    </cp-website>
+    <evenflow name="evenflow" type="desktop" home="/Users/jblum/DEV/Codeprimate/products/evenflow" repository="madcow" revision="HEAD">
+      <unit-test-suite>com.codeprimate.madcow.test.AllUnitTests</unit-test-suite>
+    </evenflow>
+    <madcow name="madcow" type="web" home="/Users/jblum/DEV/Codeprimate/products/madcow" repository="madcow" revision="HEAD">
+      <unit-test-suite>com.codeprimate.madcow.test.AllUnitTests</unit-test-suite>
+    </madcow>
+    <onpar name="onpar" type="web" home="/Users/jblum/DEV/Codeprimate/products/onpar" repository="onpar" revision="HEAD">
+      <unit-test-suite>com.codeprimate.onpar.test.AllUnitTests</unit-test-suite>
+    </onpar>
+  </apple>
+  <devbox>
+    <!-- begin examples -->
+    <cp-helloworld-desktop name="cp-helloworld-desktop" type="desktop" home="f:/Codeprimate/products/cp-helloworld-desktop" repository="cp-helloworld-desktop" revision="HEAD">
+      <unit-test-suite>com.cp.helloworld.test.AllUnitTests</unit-test-suite>
+    </cp-helloworld-desktop>
+    <cp-helloworld-mobile name="cp-helloworld-mobile" type="mobile" home="f:/Codeprimate/products/cp-helloworld-mobile" repository="cp-helloworld-mobile" revision="HEAD">
+      <unit-test-suite>com.cp.helloworld.test.AllUnitTests</unit-test-suite>
+    </cp-helloworld-mobile>
+    <cp-helloworld-web name="cp-helloworld-web" type="web" home="f:/Codeprimate/products/cp-helloworld-web" repository="cp-helloworld-web" revision="HEAD">
+      <unit-test-suite>com.cp.helloworld.test.AllUnitTests</unit-test-suite>
+    </cp-helloworld-web>
+    <!-- end examples -->
+    <cp-common name="cp-common" type="api" home="f:/Codeprimate/products/cp-common" repository="cp-common" revision="HEAD">
+      <unit-test-suite>com.cp.common.test.AllUnitTests</unit-test-suite>
+    </cp-common>
+    <cp-domain name="cp-domain" type="api" home="f:/Codeprimate/products/cp-domain" repository="cp-domain" revision="HEAD">
+      <unit-test-suite>com.cp.domain.test.AllUnitTests</unit-test-suite>
+    </cp-domain>
+    <cp-examples name="cp-examples" type="api" home="f:/Codeprimate/products/cp-examples" repository="cp-examples" revision="HEAD">
+      <unit-test-suite>com.cp.examples.test.AllUnitTests</unit-test-suite>
+    </cp-examples>
+    <cp-tools name="cp-tools" type="api" home="f:/Codeprimate/products/cp-tools" repository="cp-tools" revision="HEAD">
+      <unit-test-suite>com.cp.tools.test.AllUnitTests</unit-test-suite>
+    </cp-tools>
+    <cp-website name="cp-website" type="web" home="f:/Codeprimate/products/cp-website" repository="cp-website" revision="HEAD">
+      <unit-test-suite>com.cp.website.test.AllUnitTests</unit-test-suite>
+    </cp-website>
+    <evenflow name="evenflow" type="desktop" home="f:/Codeprimate/products/evenflow" repository="evenflow" revision="HEAD">
+      <unit-test-suite>com.codeprimate.evenflow.test.AllUnitTests</unit-test-suite>
+    </evenflow>
+    <madcow name="madcow" type="web" home="f:/Codeprimate/products/madcow" repository="madcow" revision="HEAD">
+      <unit-test-suite>com.codeprimate.madcow.test.AllUnitTests</unit-test-suite>
+    </madcow>
+    <onpar name="onpar" type="web" home="f:/Codeprimate/products/onpar" repository="onpar" revision="HEAD">
+      <unit-test-suite>com.codeprimate.onpar.test.AllUnitTests</unit-test-suite>
+    </onpar>
+  </devbox>
+</projects>

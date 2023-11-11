@@ -1,0 +1,186 @@
+<?xml version="1.0"?>
+<project name="cp-coverage">
+
+  <!-- Cobertura properties -->
+  <property name="corbertura.instrument.max.memory" value="256M"/>
+  <property name="corbertura.report.format" value="html"/>
+
+  <!-- Emma properties -->
+  <property name="emma.enabled" value="true"/>
+  <property name="emma.instr.merge" value="false"/>
+
+  <target name="cobertura.test.coverage" depends="build" description="Runs Cobertura code/test coverage tool on the project codebase!">
+    <property name="cobertura.coverage.file" value="${etc.coverage.dir}/${project.name}-coverage.cobertura"/>
+    <property name="cobertura.report.dir" value="${etc.coverage.dir}/report/cobertura"/>
+
+    <mkdir dir="${cobertura.report.dir}"/>
+
+    <!-- determine whether we need to run test coverage analysis -->
+    <condition property="condition.run.test.coverage">
+      <or>
+        <not>
+          <available file="${cobertura.coverage.file}"/>
+        </not>
+        <uptodate targetfile="${dist.dir}/${jar.file}" srcfile="${cobertura.coverage.file}"/>
+      </or>
+    </condition>
+
+    <if>
+      <istrue value="${condition.run.test.coverage}"/>
+      <then>
+        <trycatch property="cobertura.test.coverage.exception">
+          <try>
+            <echo level="info">Running Cobertura test coverage analysis...</echo>
+
+            <delete file="${cobertura.coverage.file}" failonerror="false"/>
+            <delete dir="${cobertura.report.dir}" includeEmptyDirs="true" failonerror="false"/>
+
+            <delete dir="${build.instrumented.classes.dir}" includeEmptyDirs="true" failonerror="false"/>
+            <mkdir dir="${build.instrumented.classes.dir}"/>
+
+            <!-- instrument project classes -->
+            <cobertura-instrument datafile="${cobertura.coverage.file}" maxmemory="${corbertura.instrument.max.memory}"
+                                  todir="${build.instrumented.classes.dir}">
+              <fileset dir="${build.dir}">
+                <include name="**/*.class"/>
+                <exclude name="**/*Test.class"/>
+                <exclude name="**/*TestCase.class"/>
+                <exclude name="**/*Tests.class"/>
+                <exclude name="**/*TestSuite.class"/>
+              </fileset>
+            </cobertura-instrument>
+
+            <sequential>
+              <!-- run tests -->
+              <runtarget target="unit.tests"/>
+
+              <waitfor maxwait="5" maxwaitunit="minute" checkevery="15" checkeveryunit="second">
+                <and>
+                  <istrue value="${condition.tests.ran}"/>
+                  <available file="${cobertura.coverage.file}"/>
+                </and>
+              </waitfor>
+
+              <!-- generate Cobertura report -->
+              <cobertura-report format="${corbertura.report.format}" datafile="${cobertura.coverage.file}"
+                                destdir="${cobertura.report.dir}" srcdir="${src.dir}"/>
+            </sequential>
+          </try>
+          <finally>
+            <delete dir="${build.instrumented.classes.dir}" includeEmptyDirs="true" failonerror="false"/>
+          </finally>
+        </trycatch>
+      </then>
+      <else>
+        <echo level="info">Test coverage analysis is up to date.</echo>
+      </else>
+      </if>
+  </target>
+
+  <target name="cobertura.test.coverage.report" description="deprecated, however, needed until cobertura.test.coverage target works properly!">
+    <property name="cobertura.coverage.file" value="${etc.coverage.dir}/${project.name}-coverage.cobertura"/>
+    <property name="cobertura.report.dir" value="${etc.coverage.dir}/report/cobertura"/>
+
+    <cobertura-report format="${corbertura.report.format}" datafile="${cobertura.coverage.file}"
+                      destdir="${cobertura.report.dir}" srcdir="${src.dir}"/>
+  </target>
+
+  <target name="emma.test.coverage" depends="build" description="Runs the EMMA code/test coverage tool on the project codebase!">
+    <property name="emma.coverage.file" value="${etc.coverage.dir}/${project.name}-coverage.emma"/>
+    <property name="emma.metadata.file" value="${etc.coverage.dir}/${project.name}-metadata.emma"/>
+    <property name="emma.report.dir" value="${etc.coverage.dir}/report/emma"/>
+
+    <mkdir dir="${emma.report.dir}"/>
+
+    <condition property="condition.run.test.coverage">
+      <or>
+        <not>
+          <available file="${emma.metadata.file}"/>
+        </not>
+        <uptodate targetfile="${dist.dir}/${jar.file}" srcfile="${emma.metadata.file}"/>
+      </or>
+    </condition>
+
+    <if>
+      <istrue value="${condition.run.test.coverage}"/>
+      <then>
+        <trycatch property="emma.test.coverage.exception">
+          <try>
+            <echo level="info">Running EMMA test coverage analysis...</echo>
+
+            <delete file="${emma.coverage.file}" failonerror="false"/>
+            <delete file="${emma.metadata.file}" failonerror="false"/>
+            <delete dir="${emma.report.dir}" includeEmptyDirs="true" failonerror="false"/>
+
+            <delete dir="${build.instrumented.classes.dir}" includeEmptyDirs="true" failonerror="false"/>
+            <mkdir dir="${build.instrumented.classes.dir}"/>
+
+            <!-- instrument project classes -->
+            <emma enabled="true">
+              <instr destdir="${build.instrumented.classes.dir}"
+                     instrpath="${build.dir}"
+                     metadatafile="${emma.metadata.file}"
+                     merge="${emma.instr.merge}">
+                <filter excludes="*Test*"/>
+                <filter excludes="*TestCase*"/>
+                <filter excludes="*Tests*"/>
+                <filter excludes="*TestSuite*"/>
+                <!--<instrpath>
+                  <fileset dir="${client.build.classes.dir}">
+                    <include name="**/*.class"/>
+                    <exclude name="**/*Test.class"/>
+                    <exclude name="**/*TestCase.class"/>
+                    <exclude name="**/*Tests.class"/>
+                  </fileset
+                </instrpath>-->
+              </instr>
+            </emma>
+
+            <sequential>
+              <!-- run tests -->
+              <runtarget target="unit.tests"/>
+
+              <waitfor maxwait="5" maxwaitunit="minute" checkevery="15" checkeveryunit="second">
+                <and>
+                  <istrue value="${condition.tests.ran}"/>
+                  <available file="${cobertura.coverage.file}"/>
+                </and>
+              </waitfor>
+
+              <!-- generate EMMA report -->
+              <emma enabled="${emma.enabled}">
+                <report sourcepath="${src.dir}">
+                  <fileset dir="${etc.coverage.dir}">
+                    <include name="*.emma"/>
+                  </fileset>
+                  <html outfile="${emma.report.dir}/${project.name}-emma-coverage-report.html"/>
+                </report>
+              </emma>
+            </sequential>
+          </try>
+          <finally>
+            <delete dir="${build.instrumented.classes.dir}" includeEmptyDirs="true" failonerror="false"/>
+          </finally>
+        </trycatch>
+      </then>
+      <else>
+          <echo level="error">Test coverage analysis is up to date.</echo>
+      </else>
+    </if>
+  </target>
+
+  <target name="emma.test.coverage.report" description="deprecated, however, needed until emma.test.coverage target works properly!">
+    <property name="emma.report.dir" value="${etc.coverage.dir}/report/emma"/>
+
+    <!-- generate EMMA report -->
+    <emma enabled="${emma.enabled}">
+      <report sourcepath="${src.dir}">
+        <fileset dir="${etc.coverage.dir}">
+          <include name="*.emma"/>
+        </fileset>
+        <html outfile="${emma.report.dir}/${project.name}-emma-coverage-report.html"/>
+      </report>
+    </emma>
+  </target>
+
+</project>

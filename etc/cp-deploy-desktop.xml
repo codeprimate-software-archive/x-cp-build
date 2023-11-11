@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright (c) 2009-2010. Codeprimate, LLC and authors.  All Rights Reserved.
+  ~
+  ~ This software is licensed under the Codeprimate End-User License Agreement (EULA).
+  ~ This software is proprietary and confidential in addition to an intellectual asset of the aforementioned authors.
+  ~ By using the software, the end-user implicitly consents to and agrees to be in compliance with all terms
+  ~ and conditions of the EULA.  Failure to comply with the EULA will result in the maximum penalties permissible by law.
+  ~
+  ~ In short, this software may not be reverse engineered, reproduced, copied, modified or distributed without prior
+  ~ authorization of the aforementioned authors, permissible and expressed only in writing.  The authors grant the
+  ~ end-user exclusive, non-negotiable and non-transferable use of the software "as is" without expressed or implied
+  ~ WARRANTIES, EXTENSIONS or CONDITIONS of any kind.
+  ~
+  ~ For further information on the software license, the end-user is encouraged to read the EULA @ ...
+  -->
+
+<project name="cp-deploy-desktop">
+  <description>
+    cp Ant build and deployment management system (BDMS) configuration file for deployment management of
+    a desktop software application.
+  </description>
+
+  <!-- local project properties -->
+  <property name="cp-exe.bat.file" value="${bin.dir}/cp-exe.bat"/>
+  <property name="cp-exe.sh.file" value="${bin.dir}/cp-exe.sh"/>
+  <property name="deployed-exe.bat.file" value="${deploy.dir}/${project.name}-exe.bat"/>
+  <property name="deployed-exe.sh.file" value="${deploy.dir}/${project.name}-exe.sh"/>
+
+  <target name="deploy" depends="build" description="Deploys a desktop software application.">
+    <echo level="info">Deploying project files (${project.type} deployment)...</echo>
+
+    <mkdir dir="${deploy.etc.config.dir}"/>
+    <mkdir dir="${deploy.etc.logs.dir}"/>
+    <mkdir dir="${deploy.lib.dir}"/>
+    <mkdir dir="${deploy.tmp.dir}"/>
+
+    <filterset id="deployment.filters" begintoken="%" endtoken="*">
+      <filterset refid="init.filters"/>
+    </filterset>
+
+    <copy todir="${deploy.dir}" failonerror="true" overwrite="true">
+      <fileset dir="${bin.dir}">
+        <include name="cp-exe.*"/>
+      </fileset>
+      <filterset refid="deployment.filters"/>
+      <mapper type="regexp" from="cp(-exe\..*)" to="${project.name}\1"/>
+    </copy>
+
+    <copy todir="${deploy.lib.dir}">
+      <fileset dir="${dist.dir}">
+        <include name="**/*.jar"/>
+      </fileset>
+    </copy>
+
+    <foreach target="copy.file.to.dir" param="file.to.copy" parallel="true">
+      <path refid="runtime.classpath"/>
+      <param name="destination.dir" value="${deploy.lib.dir}"/>
+    </foreach>
+  </target>
+
+  <target name="deploy.clean" description="Cleans the deploy directory.">
+    <echo level="info">Removing build artifacts of the desktop application deployment.</echo>
+    <delete dir="${deploy.dir}" failonerror="false"/>
+  </target>
+
+  <target name="make" depends="deploy" description="Makes the project ready for deployment."/>
+
+</project>

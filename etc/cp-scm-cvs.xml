@@ -1,0 +1,204 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright (c) 2009-2010. Codeprimate, LLC and authors.  All Rights Reserved.
+  ~
+  ~ This software is licensed under the Codeprimate End-User License Agreement (EULA).
+  ~ This software is proprietary and confidential in addition to an intellectual asset of the aforementioned authors.
+  ~ By using the software, the end-user implicitly consents to and agrees to be in compliance with all terms
+  ~ and conditions of the EULA.  Failure to comply with the EULA will result in the maximum penalties permissible by law.
+  ~
+  ~ In short, this software may not be reverse engineered, reproduced, copied, modified or distributed without prior
+  ~ authorization of the aforementioned authors, permissible and expressed only in writing.  The authors grant the
+  ~ end-user exclusive, non-negotiable and non-transferable use of the software "as is" without expressed or implied
+  ~ WARRANTIES, EXTENSIONS or CONDITIONS of any kind.
+  ~
+  ~ For further information on the software license, the end-user is encouraged to read the EULA @ ...
+  -->
+
+<project name="cp-scm-cvs">
+  <description>
+    cp Ant build and deployment management system (BDMS) configuration file for source code management (SCM)
+    using the CVS version/revision control tool.
+  </description>
+
+  <!-- SCM (CVS) Configuration -->
+  <property name="cvs.failonerror" value="true"/>
+  <property name="cvs.log.file" value="${project.home}/cvs.log"/>
+  <propertycopy name="cvs.package" from="project.repository"/>
+  <property name="cvs.quiet" value="false"/>
+  <propertycopy name="cvs.tag" from="project.repository.revision"/>
+  <property name="cvs.verbose" value="false"/>
+
+  <pref name="cvs.root"
+        localProperty="projects.${args.host}.${project.name}.scm-prefs.cvs-root"
+        globalProperty="projects.global-prefs.scm-prefs.cvs-root"
+        defaultValue=":ext:jblum@dataserver:/src-ctrl/cvsroot"/>
+
+  <pref name="cvs.rsh"
+        localProperty="projects.${args.host}.${project.name}.scm-prefs.cvs-rsh"
+        globalProperty="projects.global-prefs.scm-prefs.cvs-rsh"
+        defaultValue="ssh"/>
+
+  <pref name="cvs.start.tag"
+        localProperty="projects.${args.host}.${project.name}.scm-prefs.cvs-start-tag"
+        globalProperty="projects.global-prefs.scm-prefs.cvs-start-tag"
+        defaultValue="Initial"/>
+
+  <pref name="cvs.vendor.tag"
+        localProperty="projects.${args.host}.${project.name}.scm-prefs.cvs-vendor-tag"
+        globalProperty="projects.global-prefs.scm-prefs.cvs-vendor-tag"
+        defaultValue="Codeprimate"/>
+
+  <target name="scm.init" description="Initializes a Codeprimate project directory for source code management.">
+    <copy file="${basedir}/etc/config/cvsignore" tofile="${project.home}/.cvsignore" failonerror="false" filtering="true" overwrite="true">
+      <filterset refid="init.filters"/>
+    </copy>
+
+    <copy file="${basedir}/etc/config/etc-cvsignore" tofile="${etc.dir}/.cvsignore" failonerror="false" filtering="true" overwrite="true">
+      <filterset refid="init.filters"/>
+    </copy>
+  </target>
+
+  <target name="add" description="Adds a file, directory or a group of files and directories to the source code repository.">
+    <echo level="debug">Running the CVS add command...</echo>
+    <input message="Please enter the source files seperated with spaces to be added to the source code repository (${project.repository}), version (${project.repository.revision}): " property="cvs.add.files"/>
+
+    <if>
+      <not>
+        <equals arg1="${cvs.add.files}" arg2="${empty.string}" trim="true"/>
+      </not>
+      <then>
+        <cvs command="add" cvsRoot="${cvs.root}" cvsRsh="${cvs.rsh}" dest="${project.home}"
+             package="${cvs.package}" tag="${cvs.tag}" quiet="${cvs.quiet}" failonerror="${cvs.failonerror}">
+          <commandline>
+            <argument value="${cvs.add.files}"/>
+          </commandline>
+        </cvs>
+      </then>
+      <else>
+        <echo level="warn">No source file(s) were specified to add... aborting!</echo>
+      </else>
+    </if>
+  </target>
+
+  <!-- TODO implement -->
+  <target name="branch" description="Branches the source code repository.">
+    <fail message="Not Implemented!"/>
+  </target>
+
+  <target name="checkout" description="Checks out a working copy of a source code repository.">
+    <echo level="debug">Running the CVS checkout (co) command...</echo>
+
+    <if>
+      <not>
+        <available file="${project.home}" type="dir" property="condition.project.home.available"/>
+      </not>
+      <then>
+        <dirname file="${project.home}" property="destdir"/>
+        <cvs command="checkout" cvsRoot="${cvs.root}" cvsRsh="${cvs.rsh}" dest="${destdir}"
+             package="${cvs.package}" tag="${cvs.tag}" quiet="${cvs.quiet}" failonerror="${cvs.failonerror}"/>
+      </then>
+      <else>
+        <echo level="warn">A working copy of source code repository (${project.repository}) already exists!</echo>
+      </else>
+    </if>
+  </target>
+
+  <!-- TODO add more logic concerning the cvs.log file and determining whether tests passed or not -->
+  <target name="commit" description="Checks in all source code file modifications in the working copy to the source code repository.">
+    <echo level="debug">Running the CVS commit command...</echo>
+    <cvs command="commit -F ${cvs.log.file}" cvsRoot="${cvs.root}" cvsRsh="${cvs.rsh}" dest="${project.home}"
+         package="${cvs.package}" tag="${cvs.tag}" quiet="${cvs.quiet}" failonerror="${cvs.failonerror}"/>
+  </target>
+
+  <target name="export" description="Exports a source code repository for archival purposes.">
+    <echo level="debug">Running the CVS export command...</echo>
+    <input message="Enter the destination directory for the export: " property="destdir"/>
+
+    <mkdir dir="${destdir}"/>
+    <delete dir="${destdir}${file.separator}${project.name}" failonerror="false"/>
+
+    <cvs command="export" cvsRoot="${cvs.root}" cvsRsh="${cvs.rsh}" dest="${destdir}"
+         package="${cvs.package}" tag="${cvs.tag}" quiet="${cvs.quiet}" failonerror="${cvs.failonerror}"/>
+  </target>
+
+  <target name="import" description="Imports the project home directory into the source code repository.">
+    <if>
+      <not>
+        <available file="${project.home}${file.separator}CVS" type="dir"/>
+      </not>
+      <then>
+        <echo level="debug">Running the CVS import command...</echo>
+
+        <mkdir dir="${bak.dir}"/>
+        <copy file="${project.home}" todir="${bak.dir}" failonerror="true" overwrite="true"/>
+
+        <cvs command="import -m Initial" cvsRoot="${cvs.root}" cvsRsh="${cvs.rsh}" dest="${project.home}" quiet="${cvs.quiet}"
+             failonerror="${cvs.failonerror}">
+          <commandline>
+            <argument value="${project.name}"/>
+            <argument value="${cvs.vendor.tag}"/>
+            <argument value="${cvs.start.tag}"/>
+          </commandline>
+        </cvs>
+      </then>
+      <else>
+        <fail>The project home directory (${project.home}) has already been added under source control management!</fail>
+      </else>
+    </if>
+  </target>
+
+  <!-- TODO implement -->
+  <target name="merge" description="Merges the contents from a specified repository version to this repository version.">
+    <fail message="Not Implemented!"/>
+  </target>
+
+  <target name="remove" description="Removes a file or directory from source control.">
+    <input message="Please enter the source file to remove from the source code repository (${project.repository}), version (${project.repository.revision}): " property="cvs.remove.file"/>
+
+    <if>
+      <not>
+        <equals arg1="${cvs.remove.file}" arg2="${empty.string}" trim="true"/>
+      </not>
+      <then>
+        <delete file="${cvs.remove.file}" failonerror="true" verbose="true"/>
+
+        <cvs command="remove" cvsRoot="${cvs.root}" cvsRsh="${cvs.rsh}" dest="${project.home}"
+             package="${cvs.package}" tag="${cvs.tag}" quiet="${cvs.quiet}" failonerror="${cvs.failonerror}">
+          <commandline>
+            <argument value="${cvs.remove.file}"/>
+          </commandline>
+        </cvs>
+      </then>
+      <else>
+        <echo level="warn">No source file specified to remove... aborting!</echo>
+      </else>
+    </if>
+  </target>
+
+  <!-- TODO implement -->
+  <target name="tag" description="Tags the source code repository.">
+    <fail message="Not Implemented!"/>
+  </target>
+
+  <target name="update" description="Updates the working copy of the source code repository.">
+    <echo level="debug">Running the CVS update (up) command...</echo>
+
+    <if>
+      <available file="${project.home}/CVS" type="dir"/>
+      <then>
+        <tempfile property="cvs.temp.file" destdir="${basedir}/tmp" createfile="true"
+                  prefix="cvs-output" suffix=".tmp" deleteonexit="false"/>
+        <cvs command="update -dP" cvsRoot="${cvs.root}" cvsRsh="${cvs.rsh}" dest="${project.home}"
+             package="${cvs.package}" tag="${cvs.tag}" quiet="${cvs.quiet}" failonerror="${cvs.failonerror}"
+             output="${cvs.temp.file}"/>
+        <loadfile srcfile="${cvs.temp.file}" property="cvs.temp.file.content"/>
+        <echo level="info">${cvs.temp.file.content}</echo>
+      </then>
+      <else>
+        <echo level="warn">A working copy of source code repository (${project.repository}) does not exist!</echo>
+      </else>
+    </if>
+  </target>
+
+</project>

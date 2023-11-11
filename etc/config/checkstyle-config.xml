@@ -1,0 +1,225 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE module PUBLIC "-//Puppy Crawl//DTD Check Configuration 1.2//EN"
+  "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
+
+<module name="Checker">
+
+  <property name="localeCountry" value="${locale.country}" default="US"/>
+  <property name="localeLanguage" value="${locale.language}" default="en"/>
+
+  <!-- declare suppressions file to prevent certain Checkstyle checks on Java source code files -->
+  <module name="SuppressionFilter">
+      <property name="file" value="${suppressionsFile}"/>
+  </module>
+
+  <!-- begin Checkstyle checks on Java source code files -->
+  <module name="TreeWalker">
+
+    <property name="cacheFile" value="tmp/checkstyle.cache"/>
+    <property name="tabWidth" value="${tab.width}" default="2"/>
+
+    <!-- check Javadoc Comments in Java source code files -->
+
+    <!-- check Naming Conventions in Java source code files -->
+    <module name="AbstractClassName">
+      <property name="format" value="^Abstract[A-Z][a-zA-Z0-9]*$"/>
+    </module>
+    <module name="ConstantName"/>
+    <module name="MemberName"/>
+    <module name="MethodName"/>
+    <module name="PackageName">
+      <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
+    </module>
+    <module name="ParameterName"/>
+    <module name="StaticVariableName"/>
+    <module name="TypeName"/>
+
+    <!-- check Headers in Java source code files -->
+    <module name="RegexpHeader">
+      <property name="headerFile" value="${javaHeaderFile}"/>
+    </module>
+
+    <!-- check Imports in Java source code files -->
+    <module name="AvoidStarImport"/>
+    <module name="IllegalImport"/>
+    <module name="RedundantImport"/>
+    <module name="UnusedImports"/>
+    <module name="ImportOrder">
+      <property name="groups" value="com,java,javax,junit,net,org"/>
+    </module>
+
+    <!-- check Size Violations in Java source code files -->
+    <module name="FileLength">
+      <property name="max" value="3000"/>
+      <property name="severity" value="warn"/>
+    </module>
+    <module name="LineLength">
+      <property name="max" value="120"/>
+    </module>
+    <module name="MethodLength">
+      <property name="max" value="60"/>
+    </module>
+    <module name="AnonInnerLength">
+      <property name="max" value="40"/>
+    </module>
+    <module name="ParameterNumber"/>
+
+    <!-- check Whitespace in Java source code files -->
+    <module name="EmptyForInitializerPad">
+      <property name="option" value="space"/>
+    </module>
+    <module name="EmptyForIteratorPad">
+      <property name="option" value="space"/>
+    </module>
+    <module name="MethodParamPad"/>
+    <module name="NoWhitespaceAfter">
+      <property name="allowLineBreaks" value="false"/>
+      <property name="tokens" value="BNOT, DEC, DOT, INC, LNOT, UNARY_MINUS, UNARY_PLUS"/>
+    </module>
+    <module name="NoWhitespaceBefore"/>
+    <module name="OperatorWrap">
+      <property name="tokens" value="ASSIGN, BAND_ASSIGN, BOR_ASSIGN, BSR_ASSIGN, BXOR_ASSIGN, DIV_ASSIGN, MINUS_ASSIGN, MOD_ASSIGN, PLUS_ASSIGN, SL_ASSIGN, SR_ASSIGN, STAR_ASSIGN"/>
+      <property name="option" value="eol"/>
+    </module>
+    <module name="ParenPad"/>
+    <module name="TypecastParenPad"/>
+    <module name="TabCharacter"/>
+    <module name="WhitespaceAfter"/>
+    <module name="WhitespaceAround">
+      <property name="allowEmptyConstructors" value="true"/>
+      <property name="allowEmptyMethods" value="true"/>
+    </module>
+
+    <!-- checks Modifiers in Java source code files -->
+    <module name="ModifierOrder"/>
+
+    <!-- checks Blocks in Java source code files -->
+    <module name="EmptyBlock"/>
+    <module name="LeftCurly">
+      <property name="option" value="nlow"/>
+    </module>
+    <module name="NeedBraces"/>
+    <module name="RightCurly">
+      <property name="option" value="alone"/>
+    </module>
+    <module name="AvoidNestedBlocks"/>
+
+    <!-- check Coding conventions in Java source code files -->
+    <module name="CovariantEquals"/>
+    <module name="DoubleCheckedLocking"/>
+    <module name="EmptyStatement"/>
+    <module name="EqualsHashCode"/>
+    <module name="FinalLocalVariable">
+      <property name="tokens" value="PARAMETER_DEF, VARIABLE_DEF"/>
+    </module>
+    <module name="HiddenField">
+      <property name="tokens" value="VARIABLE_DEF"/>
+    </module>
+    <module name="IllegalInstantiation">
+      <property name="classes" value="java.lang.Boolean, java.lang.String"/>
+    </module>
+    <module name="IllegalTokenText">
+      <property name="format" value="^[ass | bitch | fag | fuck | shit | son-of-a-bitch | sob]*$"/>
+      <property name="ignoreCase" value="true"/>
+      <property name="message" value="Bad words are not permitted in source code and are unprofessional!"/>
+    </module>
+    <module name="InnerAssignment"/>
+    <module name="MagicNumber"/>
+    <module name="MissingSwitchDefault"/>
+    <module name="ModifiedControlVariable"/>
+    <module name="RedundantThrows">
+      <property name="allowUnchecked" value="true"/>
+    </module>
+    <module name="SimplifyBooleanExpression"/>
+    <module name="SimplifyBooleanReturn"/>
+    <module name="StringLiteralEquality"/>
+    <module name="NestedIfDepth">
+      <property name="max" value="3"/>
+    </module>
+    <module name="NestedTryDepth">
+      <property name="max" value="2"/>
+    </module>
+    <module name="SuperClone"/>
+    <module name="SuperFinalize"/>
+    <module name="IllegalCatch">
+      <property name="illegalClassNames" value="java.lang.RuntimeException"/>
+    </module>
+    <module name="IllegalThrows">
+        <property name="illegalClassNames" value="java.lang.Throwable, java.lang.Error, java.lang.Exception, java.lang.RuntimeException"/>
+    </module>
+    <module name="PackageDeclaration"/>
+    <module name="JUnitTestCase"/>
+    <module name="IllegalType"/>
+    <module name="DeclarationOrder"/>
+    <module name="ParameterAssignment"/>
+    <module name="DefaultComesLast"/>
+    <module name="FallThrough"/>
+    <module name="MultipleVariableDeclarations"/>
+    <module name="UnnecessaryParentheses"/>
+
+    <!-- check Class Design in Java source code files -->
+    <module name="VisibilityModifier">
+      <property name="packageAllowed" value="true"/>
+      <property name="protectedAllowed" value="true"/>
+    </module>
+    <module name="FinalClass"/>
+    <module name="InterfaceIsType"/>
+    <module name="HideUtilityClassConstructor"/>
+    <module name="MutableException"/>
+    <module name="ThrowsCount">
+      <property name="max" value="3"/>
+    </module>
+
+    <!-- checks Duplicate Code in Java source code files -->
+    <module name="StrictDuplicateCode">
+      <property name="max" value="10"/>
+    </module>
+
+    <!-- checks Metric conventions in Java source code files -->
+    <module name="BooleanExpressionComplexity"/>
+    <module name="ClassDataAbstractionCoupling"/>
+    <module name="ClassFanOutComplexity"/>
+    <module name="CyclomaticComplexity">
+      <property name="max" value="4"/>
+    </module>
+    <module name="NPathComplexity">
+      <property name="max" value="25"/>
+    </module>
+    <module name="JavaNCSS">
+      <property name="methodMaximum" value="60"/>
+      <property name="classMaximum" value="3000"/>
+      <property name="fileMaximum" value="5000"/>
+    </module>
+
+    <!-- check Other conventions in Java source code files -->
+    <module name="GenericIllegalRegexp">
+      <property name="format" value="goto"/>
+    </module>
+    <module name="GenericIllegalRegexp">
+      <property name="format" value="System\.out\.println"/>
+    </module>
+    <module name="NewlineAtEndOfFile"/>
+    <module name="TodoComment">
+      <property name="format" value="TODO"/>
+    </module>
+    <module name="Translation"/>
+    <module name="UpperEll"/>
+    <module name="ArrayTypeStyle"/>
+    <module name="FinalParameters"/>
+    <module name="Indentation">
+      <property name="basicOffset" value="2"/>
+      <property name="caseIndent" value="2"/>
+    </module>
+    <module name="TrailingComment"/>
+
+    <!-- explicitly check for return statements in a finally clause of a try/catch -->
+    <module name="DescendantToken">
+      <property name="tokens" value="LITERAL_FINALLY"/>
+      <property name="minimumDepth" value="1"/>
+      <property name="limitedTokens" value="LITERAL_RETURN"/>
+      <property name="maximumNumber" value="0"/>
+    </module>
+  </module>
+
+</module>

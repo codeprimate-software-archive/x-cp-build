@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+
+<project name="cp-deploy-web">
+  <description>
+    cp Ant build and deployment management system (BDMS) configuration file for deployment management of
+    a web application.
+  </description>
+
+  <property name="etc.web.dir" location="${etc.dir}/web"/>
+  <property name="build.web.dir" location="${build.dir}/web"/>
+  <property name="web-inf.dir" location="${build.web.dir}/WEB-INF"/>
+  <property name="web-inf.classes.dir" location="${web-inf.dir}/classes"/>
+  <property name="web-inf.lib.dir" location="${web-inf.dir}/lib"/>
+
+  <!-- Web Archive (WAR file) Configuration -->
+  <property name="war.basedir" location="${build.web.dir}"/>
+  <property name="war.compress" value="true"/>
+  <property name="war.file" location="${dist.dir}/${jar.file.name}.war"/>
+  <property name="war.level" value="5"/>
+  <property name="war.update" value="false"/>
+  <property name="war.web.xml.file" location="${etc.web.dir}/WEB-INF/web.xml"/>
+
+  <target name="deploy" description="Deploys a web application.">
+    <fail>Not Implemented!</fail>
+    <echo level="info">Deploying project files (${project.type} deployment)...</echo>
+  </target>
+
+  <target name="deploy.clean" description="Cleans the contents of the build web directory.">
+    <echo level="info">Removing build artifacts of the web application deployment.</echo>
+    <delete dir="${build.web.dir}" failonerror="false"/>
+    <delete file="${war.file}" failonerror="true"/>
+  </target>
+
+  <target name="web.build.war" description="Packages the application build artifacts into a deployable WAR file.">
+    <echo level="info">Packaging the ${project.name} web application into a deployable WAR file.</echo>
+
+    <mkdir dir="${web-inf.classes.dir}"/>
+    <mkdir dir="${web-inf.lib.dir}"/>
+
+    <copy todir="${build.web.dir}">
+      <fileset dir="${etc.web.dir}">
+        <exclude name="**/CVS"/>
+      </fileset>
+    </copy>
+
+    <foreach target="copy.file.to.dir" param="file.to.copy" parallel="true">
+      <path refid="webapp.runtime.classpath"/>
+      <param name="destination.dir" value="${web-inf.lib.dir}"/>
+    </foreach>
+
+    <war basedir="${war.basedir}"
+         destfile="${war.file}"
+         webxml="${war.web.xml.file}"
+         compress="${war.compress}"
+         level="${war.level}"
+         update="${war.update}"/>
+  </target>
+
+  <target name="make" depends="deploy" description="Makes the project ready for deployment (distribution)."/>
+
+</project>

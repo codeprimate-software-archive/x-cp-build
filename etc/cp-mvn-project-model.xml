@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright (c) 2009-2010. Codeprimate, LLC and authors.  All Rights Reserved.
+  ~
+  ~ This software is licensed under the Codeprimate End-User License Agreement (EULA).
+  ~ This software is proprietary and confidential in addition to an intellectual asset of the aforementioned authors.
+  ~ By using the software, the end-user implicitly consents to and agrees to be in compliance with all terms
+  ~ and conditions of the EULA.  Failure to comply with the EULA will result in the maximum penalties permissible by law.
+  ~
+  ~ In short, this software may not be reverse engineered, reproduced, copied, modified or distributed without prior
+  ~ authorization of the aforementioned authors, permissible and expressed only in writing.  The authors grant the
+  ~ end-user exclusive, non-negotiable and non-transferable use of the software "as is" without expressed or implied
+  ~ WARRANTIES, EXTENSIONS or CONDITIONS of any kind.
+  ~
+  ~ For further information on the software license, the end-user is encouraged to read the EULA @ ...
+  -->
+
+<project name="cp-mvn-project-model">
+  <property name="bak.dir" location="${projects.global-prefs.bak-dir}"/>
+  <property name="bin.dir" location="${project.home}/bin"/>
+  <property name="build.dir" location="${project.home}/target/classes"/>
+  <property name="build.etc.config.dir" location="${build.dir}/etc/config"/>
+  <property name="build.etc.icons.dir" location="${build.dir}/etc/icons"/>
+  <property name="build.etc.images.dir" location="${build.dir}/etc/images"/>
+  <property name="build.etc.logo.dir" location="${build.dir}/etc/logo"/>
+  <property name="build.instrumented.classes.dir" location="${project.home}/target/instrumented/classes"/>
+  <property name="deploy.dir" location="${project.home}/target/${project.name}-${project.version}"/>
+  <property name="deploy.etc.config.dir" location="${deploy.dir}/etc/config"/>
+  <property name="deploy.etc.logs.dir" location="${deploy.dir}/etc/logs"/>
+  <property name="deploy.lib.dir" location="${deploy.dir}/lib"/>
+  <property name="deploy.tmp.dir" location="${deploy.dir}/tmp"/>
+  <property name="dist.dir" location="${project.home}/target"/>
+  <property name="etc.dir" location="${project.home}/src/main/resources/etc"/>
+  <property name="etc.build.dir" location="${project.home}/etc/build"/>
+  <property name="etc.checkstyle.dir" location="${project.home}/etc/checkstyle"/>
+  <property name="etc.config.dir" location="${etc.dir}/config"/>
+  <property name="etc.coverage.dir" location="${project.home}/etc/coverage"/>
+  <property name="etc.icons.dir" location="${etc.dir}/icons"/>
+  <property name="etc.images.dir" location="${etc.dir}/images"/>
+  <property name="etc.logo.dir" location="${etc.dir}/logo"/>
+  <property name="etc.meta-inf.dir" location="${project.home}/src/main/resources/META-INF"/>
+  <property name="etc.test.dir" location="${project.home}/etc/test"/>
+  <property name="lib.dir" location="${project.home}/lib"/>
+  <property name="src.dir" location="${project.home}/src/main/java"/>
+  <property name="test.src.dir" location="${project.home}/src/test/java"/>
+  <property name="tmp.dir" location="${project.home}/tmp"/>
+</project>
