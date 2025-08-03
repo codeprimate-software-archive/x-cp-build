@@ -1,0 +1,12 @@
+.backup/
+.bak/
+.gradle/
+.idea/
+build/
+etc/build
+etc/release
+target/
+.DS_Store
+*.iws
+*.ipr
+*.iml
